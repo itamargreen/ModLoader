@@ -46,6 +46,8 @@ namespace Terraria.ModLoader
 		internal readonly IDictionary<string, ModNPC> npcs = new Dictionary<string, ModNPC>();
 		internal readonly IDictionary<string, GlobalNPC> globalNPCs = new Dictionary<string, GlobalNPC>();
 		internal readonly IDictionary<string, ModGore> gores = new Dictionary<string, ModGore>();
+
+        internal readonly IDictionary<string, ModMount> mounts = new Dictionary<string, ModMount>();
 		/*
          * Initializes the mod's information, such as its name.
          */
@@ -150,7 +152,10 @@ namespace Terraria.ModLoader
 				{
 					AutoloadSound(type);
 				}
-				
+                if (type.IsSubclassOf(typeof(ModMount)))
+                {
+                    AutoloadMount(type);
+                }
 				
 				
 			}
@@ -716,6 +721,52 @@ namespace Terraria.ModLoader
 			}
 		}
 
+        public void AddMount(string name, ModMount mount, string texture)
+        {
+            int id = MountLoader.ReserveMountID();
+            
+            mount.mount.Reset();
+            mounts[name] = mount;
+            MountLoader.Mounts[id] = mount;
+            mount.texture = texture;
+            mount.mod = this;
+        }
+
+        public ModMount GetMount(string name)
+        {
+            if (items.ContainsKey(name))
+            {
+                return mounts[name];
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public int MountType(string name)
+        {
+            ModMount mount = GetMount(name);
+            if (mount == null)
+            {
+                return 0;
+            }
+            return mount.mount.Type;
+        }
+        private void AutoloadMount(Type type)
+        {
+            ModMount mount = (ModMount)Activator.CreateInstance(type);
+            mount.mod = this;
+            string name = type.Name;
+            string texture = (type.Namespace + "." + type.Name).Replace('.', '/');
+
+            if (mount.Autoload(ref name, ref texture))
+            {
+                AddMount(name, mount, texture);
+                
+            }
+        }
+
 		internal void SetupContent()
 		{
 			foreach (ModItem item in items.Values)
@@ -792,6 +843,10 @@ namespace Terraria.ModLoader
 				Main.soundItem[sound.Type] = ModLoader.GetSound(sound.audioFilename);
 				Main.soundInstanceItem[sound.Type] = Main.soundItem[sound.Type].CreateInstance();
 			}
+            foreach (ModMount mount in mounts.Values)
+            {
+                mount.SetDefaults();
+            }
 		}
 
 		internal void Unload() //I'm not sure why I have this

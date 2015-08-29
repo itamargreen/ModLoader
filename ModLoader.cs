@@ -192,6 +192,8 @@ namespace Terraria.ModLoader
 			ModGore.ResizeArrays();
 			NPCHeadLoader.ResizeAndFillArrays();
 			ModSound.ResizeArrays();
+            MountLoader.ResizeArrays();
+
 			
 		}
 
@@ -395,6 +397,7 @@ namespace Terraria.ModLoader
 			ProjectileLoader.Unload();
 			NPCLoader.Unload();
 			ModGore.Unload();
+            MountLoader.Unload();
 			ModSound.Unload();
 			NPCHeadLoader.Unload();
 			sounds.Clear();
